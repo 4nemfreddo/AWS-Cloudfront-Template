@@ -1,0 +1,49 @@
+Resources:
+  KaliLinuxEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t2.micro  # Free Tier eligible instance type
+      # Replace with the official Kali Linux AMI ID for your region
+      ImageId: ami-0f1e5ac44e4dd64f3  
+      KeyName: !Ref KeyName  # Use a key pair for secure SSH access
+      Tags:
+        - Key: Name
+          Value: Kali-Linux-Free-Tier
+        - Key: Application
+          Value: !Ref "AWS::StackName"
+      SecurityGroupIds:
+        - !Ref KaliLinuxSecurityGroup
+
+  KaliLinuxSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow SSH and limit inbound traffic
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref MyIpRange # Restrict SSH access to your IP address
+      SecurityGroupEgress:
+        - IpProtocol: -1  # Allow all outbound traffic
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+
+# Parameter to enter your public IP for SSH access security
+Parameters:
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+  MyIpRange:
+    Type: String
+    Description: The IP range that can SSH into the EC2 instance
+    Default: "0.0.0.0/0"  # Change to your public IP to limit access
+
+# Output important values for easy access
+Outputs:
+  InstanceId:
+    Description: Instance ID of Kali Linux EC2 instance
+    Value: !Ref KaliLinuxEC2Instance
+  PublicIP:
+    Description: Public IP address of Kali Linux EC2 instance
+    Value: !GetAtt KaliLinuxEC2Instance.PublicIp
